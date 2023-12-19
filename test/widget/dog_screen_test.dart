@@ -1,15 +1,20 @@
+import 'package:doggo_dec_19/models/dog_service/dog_breed.dart';
 import 'package:doggo_dec_19/screens/dog_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../mock/mock_dog_service.dart';
 
 void main() {
   group('When Dog Screen', () {
     testWidgets('is in initial state the expected UI elements are displayed',
         (widgetTester) async {
       // Initialize dependencies and required environment resources required by the code being tested
+      MockDogService mockDogService = MockDogService();
 
       // Run instance of code (class/widget) if required
-      await widgetTester.pumpWidget(MaterialApp(home: DogScreen()));
+      await widgetTester
+          .pumpWidget(MaterialApp(home: DogScreen(dogService: mockDogService)));
       await widgetTester.pumpAndSettle();
 
       // Perform tests
@@ -29,22 +34,31 @@ void main() {
     });
 
     testWidgets(
-        'get dog breeds button is pressed - "not implemented" snackbar is shown',
+        'get dog breeds button is pressed - then list of dog breeds is displayed',
         (widgetTester) async {
       // Initialize dependencies and required environment resources required by the code being tested
+      MockDogService mockDogService = MockDogService();
 
       // Run instance of code (class/widget) if required
-      await widgetTester.pumpWidget(MaterialApp(home: DogScreen()));
+      await widgetTester
+          .pumpWidget(MaterialApp(home: DogScreen(dogService: mockDogService)));
       await widgetTester.pumpAndSettle();
 
       // Perform tests
+      // ===================================================================================================
+      // | "List dog breeds" button press
+      // ===================================================================================================
+      // Prepare for testing
+      // - Get our own copy of the data that defines the expected state change
+      //   in reaction the request button being pressed for the first time
+      List<DogBreed> mockBreeds = (await mockDogService.getBreeds()).data!;
+
       // ---------------------------------------------------------------------------------------------------
-      // | "Not implemented yet" Snackbar is not displayed before request button is ever pressed
+      // | List of dog breeds is not displayed before request button is ever pressed
       // ---------------------------------------------------------------------------------------------------
-      expect(
-          find.widgetWithText(SnackBar,
-              "This feature is not implemented yet. It will be up and running as soon as possible. Bear with us until then. (Or doggo with us! Any animal with us is fine for sure!)"),
-          findsNothing);
+      for (DogBreed mockBreed in mockBreeds) {
+        expect(find.widgetWithText(ListTile, mockBreed.name), findsNothing);
+      }
 
       // Click request button
       await widgetTester.tap(find.widgetWithText(
@@ -52,12 +66,11 @@ void main() {
       await widgetTester.pumpAndSettle();
 
       // ---------------------------------------------------------------------------------------------------
-      // | "Not implemented yet" Snackbar is displayed after button is pressed
+      // | List of dog breeds is displayed after the request button is pressed
       // ---------------------------------------------------------------------------------------------------
-      expect(
-          find.widgetWithText(SnackBar,
-              "This feature is not implemented yet. It will be up and running as soon as possible. Bear with us until then. (Or doggo with us! Any animal with us is fine for sure!)"),
-          findsOneWidget);
+      for (DogBreed mockBreed in mockBreeds) {
+        expect(find.widgetWithText(ListTile, mockBreed.name), findsOneWidget);
+      }
     });
   });
 }

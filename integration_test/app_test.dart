@@ -39,22 +39,35 @@ void main() {
       // ---------------------------------------------------------------------------------------------------
       // | Evaluate state change - on - get dog list button pressed
       // ---------------------------------------------------------------------------------------------------
-      // 'Not Implemented' snackbar is not displayed before the request button is ever pressed
-      expect(
-          find.widgetWithText(SnackBar,
-              "This feature is not implemented yet. It will be up and running as soon as possible. Bear with us until then. (Or doggo with us! Any animal with us is fine for sure!)"),
-          findsNothing);
+      // List of dog breeds is not displayed before request button is ever pressed
+      // - No ListTile widgets should be on the screen at this point
+      expect(find.byType(ListTile), findsNothing);
 
       // Tap the request button
       await widgetTester.tap(find.widgetWithText(
           ElevatedButton, "Display list of dog breeds, please!"));
       await widgetTester.pumpAndSettle();
 
-      // 'Not Implemented' snackbar is displayed after request button is pressed
-      expect(
-          find.widgetWithText(SnackBar,
-              "This feature is not implemented yet. It will be up and running as soon as possible. Bear with us until then. (Or doggo with us! Any animal with us is fine for sure!)"),
-          findsOneWidget);
+      // If the CI flag is not set we can not be certain if we are testing against production service(s) or not
+      // - Therefore we give the services a bit of time to respond ~ in case it we are relying on remote network calls
+      if (!ciRun) {
+        Future.delayed(const Duration(seconds: 5));
+      }
+
+      // List of dog breeds is displayed after the request button is pressed
+      // - There should be some list tiles present on the screen at this point
+      expect(find.byType(ListTile), findsAtLeastNWidgets(1));
+
+      // - If the CI flag is set we can assume the external service(s) the app runs against are mocked.
+      //   - In that case we assume that the mocked dog api service is an image of mockdogapidec19:1.0
+      //   - And we can test against the data we know that this specific image produces
+      for (String dogBreed in [
+        "Affenpinscher",
+        "Afghan Hound",
+        "African Hunting Dog"
+      ]) {
+        expect(find.widgetWithText(ListTile, dogBreed), findsOneWidget);
+      }
     });
   });
 }
