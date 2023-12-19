@@ -35,6 +35,9 @@ jobs:
       # We start this image now to ensure its all spooled up and ready when we perform the integration testing
       # - Rather than just before the integration tests happen, when it is actually needed.
       - name: Run Mock API Docker Image
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: python scripts/docker_ctrl.py start ghcr.io/mittons/mockdogapidec19:1.0 3019 8019
 
       - name: Install ChromeDriver
