@@ -51,23 +51,35 @@ void main() {
       // Prepare for testing
       // - Get our own copy of the data that defines the expected state change
       //   in reaction the request button being pressed for the first time
-      List<DogBreed> mockBreeds = (await mockDogService.getBreeds()).data!;
+      List<DogBreed> mockBreeds = mockDogService.getBreedsSync().data!;
 
       // ---------------------------------------------------------------------------------------------------
       // | List of dog breeds is not displayed before request button is ever pressed
+      // |   nor the progress indicator
       // ---------------------------------------------------------------------------------------------------
       for (DogBreed mockBreed in mockBreeds) {
         expect(find.widgetWithText(ListTile, mockBreed.name), findsNothing);
       }
+      expect(find.byType(CircularProgressIndicator), findsNothing);
 
       // Click request button
       await widgetTester.tap(find.widgetWithText(
           ElevatedButton, "Display list of dog breeds, please!"));
+      await widgetTester.pump(const Duration(milliseconds: 100));
+
+      // ----------------------------------------------------------------------
+      // | Expect progress indicator to be displayed immediately after b.press
+      // ----------------------------------------------------------------------
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
       await widgetTester.pumpAndSettle();
 
       // ---------------------------------------------------------------------------------------------------
       // | List of dog breeds is displayed after the request button is pressed
+      // |   and progress indicator is gone
       // ---------------------------------------------------------------------------------------------------
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+
       for (DogBreed mockBreed in mockBreeds) {
         expect(find.widgetWithText(ListTile, mockBreed.name), findsOneWidget);
       }

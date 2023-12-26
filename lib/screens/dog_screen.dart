@@ -16,6 +16,7 @@ class DogScreen extends StatefulWidget {
 class _DogScreenState extends State<DogScreen> {
   bool dogsLoaded = false;
   late List<DogBreed> dogList;
+  bool isLoadingInitialList = false;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +27,8 @@ class _DogScreenState extends State<DogScreen> {
       ),
       body: Column(children: [
         _buildButtonContainer(),
+        if (isLoadingInitialList)
+          const Center(child: CircularProgressIndicator()),
         if (dogsLoaded) Expanded(child: _buildDogBreedList())
       ]),
     );
@@ -42,6 +45,12 @@ class _DogScreenState extends State<DogScreen> {
   }
 
   void _handleRequestButtonPressed() async {
+    if (dogsLoaded != true && isLoadingInitialList != true) {
+      setState(() {
+        isLoadingInitialList = true;
+      });
+    }
+
     // Attempt to fetch the requested data from the service layer (await)
     ServiceResult breedsResult = await widget.dogService.getBreeds();
 
@@ -50,6 +59,11 @@ class _DogScreenState extends State<DogScreen> {
 
     // If the response from the service layer expressed an unsuccessful attepmt, display user message and return
     if (!breedsResult.success) {
+      if (isLoadingInitialList == true) {
+        setState(() {
+          isLoadingInitialList = false;
+        });
+      }
       UiHelper.displaySnackbar(context,
           "Unable to retrieve data from external provider. Please try again later!");
     }
@@ -58,6 +72,7 @@ class _DogScreenState extends State<DogScreen> {
     setState(() {
       dogList = breedsResult.data!;
       dogsLoaded = true;
+      isLoadingInitialList = false;
     });
   }
 

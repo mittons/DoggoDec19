@@ -61,12 +61,14 @@ void main() {
       // - If the CI flag is set we can assume the external service(s) the app runs against are mocked.
       //   - In that case we assume that the mocked dog api service is an image of mockdogapidec19:1.0
       //   - And we can test against the data we know that this specific image produces
-      for (String dogBreed in [
-        "Affenpinscher",
-        "Afghan Hound",
-        "African Hunting Dog"
-      ]) {
-        expect(find.widgetWithText(ListTile, dogBreed), findsOneWidget);
+      if (ciRun) {
+        for (String dogBreed in [
+          "Affenpinscher",
+          "Afghan Hound",
+          "African Hunting Dog"
+        ]) {
+          expect(find.widgetWithText(ListTile, dogBreed), findsOneWidget);
+        }
       }
     });
   });

@@ -29,9 +29,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install docker
 
-      - name: Inject secrets
-        run: echo "const String dogApiKey = '${{ secrets.DOG_API_KEY }}';" >> lib/config/config.dart
-
       # We start this image now to ensure its all spooled up and ready when we perform the integration testing
       # - Rather than just before the integration tests happen, when it is actually needed.
       - name: Run Mock API Docker Image
@@ -63,7 +60,21 @@ jobs:
             --dart-define=CI=true
 
       - name: Build Flutter Web Application
-        run: flutter build web --release --base-href=/DoggoDec19/
+        run: 
+          repoStr=${{ github.repository }}
+          repoName=${repoStr#*/}
+
+          flutter build web --target=lib/licences.dart --release --base-href /${repoName}//LicencePage/
+
+          mv build/web LicencePageBuild
+
+          flutter build web --release --base-href /${repoName}/
+
+          mv LicencePageBuild build/web/LicencePage
+
+          mv build/web/LicencePage/index.html build/web/LICENCE.html
+
+          echo "LICENCE data can be viewed on [LICENCE Page](https://${{ github.repository_owner }}.github.io/${repoName}/LICENCE.html)" >> build/web/README.md
 
       - name: Deploy to gh-pages
         run: |
